@@ -1,0 +1,55 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.editor {
+  margin-bottom: 2rem;
+  border-left: 4px solid var(--color-primary);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0 1rem;
+}
+.full {
+  grid-column: 1 / -1;
+}
+.errors {
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--color-error);
+}
+.errors ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+}
+th,
+td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+thead th {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid var(--color-primary);
+}
+tbody th {
+  font-weight: 600;
+}
+.row-actions {
+  white-space: nowrap;
+  text-align: right;
+}

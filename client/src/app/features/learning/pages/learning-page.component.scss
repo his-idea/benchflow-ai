@@ -1,0 +1,35 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 1rem;
+  margin: 1rem 0 0.5rem;
+}
+.filters mat-form-field {
+  width: 9.5rem;
+}
+.filters mat-form-field.wide {
+  width: min(100%, 16rem);
+}
+.count {
+  margin: 0.5rem 0 1rem;
+  color: var(--color-text-muted);
+}
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18.5rem, 1fr));
+  gap: 1.25rem;
+}
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0 1rem;
+}
+.plan-link {
+  margin-top: 1.5rem;
+}

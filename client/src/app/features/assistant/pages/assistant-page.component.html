@@ -1,0 +1,74 @@
+<header class="page-header">
+  <h1>Bench Assistant</h1>
+  <p>
+    Ask what to learn next or for a plan draft. Answers use only your profile, your plan, the course
+    catalog, and approved guidance, and say so when they can't answer.
+  </p>
+</header>
+
+<div class="layout">
+  <section class="chat" aria-label="Conversation">
+    <div
+      #log
+      class="log"
+      role="log"
+      aria-live="polite"
+      aria-relevant="additions"
+      tabindex="0"
+      aria-label="Conversation messages"
+    >
+      @if (store.entries().length === 0) {
+        <div class="welcome">
+          <p><strong>Where would you like to start?</strong></p>
+          <app-suggested-prompts
+            [disabled]="store.sending()"
+            (pick)="send($event)"
+            (plan)="store.generatePlan()"
+          />
+        </div>
+      }
+      @for (entry of store.entries(); track entry.id) {
+        <app-chat-message [entry]="entry" (action)="runAction($event, entry)" />
+      }
+      @if (store.sending()) {
+        <p class="thinking" role="status">The assistant is working on it…</p>
+      }
+    </div>
+
+    @if (store.error(); as err) {
+      <div class="error" role="alert">
+        <p>{{ err.message }}</p>
+        @if (err.requestId) {
+          <p class="muted small">Reference: {{ err.requestId }}</p>
+        }
+        <button
+          mat-stroked-button
+          type="button"
+          [disabled]="store.sending()"
+          (click)="store.retry()"
+        >
+          <app-icon name="refresh" /> Try again
+        </button>
+      </div>
+    }
+
+    <app-chat-composer [disabled]="store.sending()" (send)="send($event)" />
+
+    @if (store.entries().length > 0) {
+      <div class="tools">
+        <app-suggested-prompts
+          [disabled]="store.sending()"
+          (pick)="send($event)"
+          (plan)="store.generatePlan()"
+        />
+        <button mat-button type="button" (click)="store.clear()">Clear conversation</button>
+      </div>
+    }
+  </section>
+
+  @if (drafts.draft()) {
+    <aside class="side" aria-label="Plan draft">
+      <app-plan-draft-editor />
+    </aside>
+  }
+</div>

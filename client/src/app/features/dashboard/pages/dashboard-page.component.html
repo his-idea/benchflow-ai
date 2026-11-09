@@ -1,0 +1,114 @@
+<header class="page-header">
+  <h1>Welcome back, {{ profileStore.profile()?.displayName ?? 'there' }}</h1>
+  <p>Here is what to focus on while you are on bench.</p>
+</header>
+
+@switch (status()) {
+  @case ('loading') {
+    <app-loading-state label="Loading your dashboard…" />
+  }
+  @case ('error') {
+    <app-error-state
+      title="We couldn't load your dashboard"
+      [message]="error()?.message ?? 'Please try again.'"
+      (retry)="load()"
+    />
+  }
+  @default {
+    <section class="next" aria-labelledby="next-heading">
+      <h2 id="next-heading" class="next-label">Recommended next skill</h2>
+      @if (nextSkill(); as next) {
+        <p class="next-skill">{{ next.name }}</p>
+        <p class="next-reason">{{ next.reason }}</p>
+        <div class="cluster">
+          @if (topCourse(); as top) {
+            <a mat-flat-button [routerLink]="['/learning', top.course.id]">
+              View {{ top.course.title }}
+            </a>
+          }
+          <a mat-stroked-button routerLink="/learning">Browse all courses</a>
+        </div>
+      } @else {
+        <p class="next-skill">You're covering your target skills</p>
+        <p class="next-reason">Update your profile if your goals have changed.</p>
+        <a mat-stroked-button routerLink="/profile">Review profile</a>
+      }
+    </section>
+
+    <section class="facts" aria-label="Summary">
+      <dl>
+        <div>
+          <dt>Average skill level</dt>
+          <dd>{{ profileStore.averageReadiness() }}%</dd>
+          <dd class="hint">Across the skills in your profile</dd>
+        </div>
+        <div>
+          <dt>Recommended courses</dt>
+          <dd>{{ recommendedCount() }}</dd>
+          <dd class="hint">With course relevance of {{ threshold }}% or more</dd>
+        </div>
+        <div>
+          <dt>Plan progress</dt>
+          <dd>{{ planStore.progress().completed }} of {{ planStore.progress().total }}</dd>
+          <dd class="hint">
+            @if (planStore.plan(); as plan) {
+              Milestones complete in "{{ plan.title }}"
+            } @else {
+              You have no plan yet
+            }
+          </dd>
+        </div>
+      </dl>
+      @if (planStore.plan()) {
+        <mat-progress-bar
+          mode="determinate"
+          [value]="planStore.progress().percent"
+          aria-label="Plan progress"
+        />
+      }
+    </section>
+
+    <div class="columns">
+      <section aria-labelledby="skills-heading">
+        <h2 id="skills-heading">Skill snapshot</h2>
+        @if (skills().length > 0) {
+          <ul class="skill-list">
+            @for (s of skills(); track s.skillId) {
+              <li>
+                <span>{{ catalog.skillName(s.skillId) }}</span>
+                <app-skill-level [level]="s.level" />
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">Add your skills in your profile to see them here.</p>
+        }
+        <a routerLink="/profile">Edit skill profile</a>
+      </section>
+
+      <section aria-labelledby="actions-heading">
+        <h2 id="actions-heading">Where to next</h2>
+        <ul class="actions">
+          <li>
+            <a routerLink="/learning">Find courses</a> ranked for your profile, with the reasons
+            shown.
+          </li>
+          <li><a routerLink="/plan">Open your plan</a> to track milestones across four weeks.</li>
+          <li>
+            <a routerLink="/assistant">Ask the assistant</a> what to learn next or for a plan draft.
+          </li>
+          @if (auth.isAdmin()) {
+            <li>
+              <a routerLink="/admin/courses">Manage courses</a> and
+              <a routerLink="/admin/demand">demand signals</a>.
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <p class="disclaimer">
+      {{ recs()?.disclaimer }}
+    </p>
+  }
+}

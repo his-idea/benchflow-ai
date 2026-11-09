@@ -1,0 +1,61 @@
+@let e = entry();
+@if (e.role === 'user') {
+  <div class="msg user">
+    <span class="visually-hidden">You said:</span>
+    <p>{{ e.text }}</p>
+  </div>
+} @else {
+  <div class="msg assistant">
+    <span class="visually-hidden">Assistant said:</span>
+    <p>{{ e.text }}</p>
+
+    @if (e.fallback) {
+      <p class="note">
+        This answer couldn't be verified against approved information, so no details are shown.
+      </p>
+    }
+
+    @if (e.grounding?.length) {
+      <p class="sources">
+        Based on:
+        @for (ref of e.grounding; track ref.sourceId; let last = $last) {
+          @if (link(ref); as target) {
+            <a [routerLink]="target">{{ ref.title }}</a>
+          } @else {
+            <span>{{ ref.title }}</span>
+          }
+          @if (!last) {
+            <span aria-hidden="true">, </span>
+          }
+        }
+      </p>
+    }
+
+    @if (e.suggestedActions?.length) {
+      <div class="cluster actions">
+        @for (a of e.suggestedActions; track a) {
+          <button mat-stroked-button type="button" (click)="action.emit(a)">{{ a }}</button>
+        }
+      </div>
+    }
+
+    <div class="feedback" role="group" aria-label="Rate this answer">
+      @if (feedback() === 'sent') {
+        <span role="status">Thanks for the feedback.</span>
+      } @else {
+        <span class="muted">Was this helpful?</span>
+        <button mat-button type="button" [disabled]="feedback() === 'sending'" (click)="rate(true)">
+          Yes
+        </button>
+        <button
+          mat-button
+          type="button"
+          [disabled]="feedback() === 'sending'"
+          (click)="rate(false)"
+        >
+          No
+        </button>
+      }
+    </div>
+  </div>
+}

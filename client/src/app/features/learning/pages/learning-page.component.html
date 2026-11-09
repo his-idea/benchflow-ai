@@ -1,0 +1,144 @@
+<header class="page-header">
+  <h1>Upskilling Store</h1>
+  <p>Courses ranked for your profile. Every score comes with the reasons behind it.</p>
+</header>
+
+<p class="disclaimer">
+  Course relevance helps you choose learning. It is not a performance rating and is not used for
+  staffing decisions.
+</p>
+
+<form
+  class="filters"
+  [formGroup]="form"
+  role="search"
+  aria-label="Filter courses"
+  (submit)="$event.preventDefault()"
+>
+  <mat-form-field class="wide">
+    <mat-label>Search courses</mat-label>
+    <input
+      matInput
+      type="search"
+      formControlName="search"
+      placeholder="Title, provider, or skill"
+      autocomplete="off"
+    />
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Level</mat-label>
+    <mat-select formControlName="level">
+      <mat-option value="">Any level</mat-option>
+      @for (level of levels; track level) {
+        <mat-option [value]="level">{{ level }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Skill</mat-label>
+    <mat-select formControlName="skill">
+      <mat-option value="">Any skill</mat-option>
+      @for (skill of catalog.skills(); track skill.id) {
+        <mat-option [value]="skill.id">{{ skill.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Duration</mat-label>
+    <mat-select formControlName="maxDuration">
+      @for (d of durations; track d.value) {
+        <mat-option [value]="d.value">{{ d.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Sort by</mat-label>
+    <mat-select formControlName="sort">
+      @for (s of sorts; track s.value) {
+        <mat-option [value]="s.value">{{ s.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  @if (hasFilters()) {
+    <button mat-button type="button" (click)="clear()">Clear filters</button>
+  }
+</form>
+
+@switch (store.status()) {
+  @case ('error') {
+    <app-error-state
+      title="We couldn't load courses"
+      [message]="store.error()?.message ?? 'Please try again.'"
+      (retry)="store.load()"
+    />
+  }
+  @case ('idle') {
+    <app-loading-state label="Loading courses…" />
+  }
+  @default {
+    @if (store.status() === 'loading' && !store.result()) {
+      <app-loading-state label="Loading courses…" />
+    } @else if (store.result(); as result) {
+      <p class="count" role="status">
+        @if (store.status() === 'loading') {
+          Updating results…
+        } @else {
+          Showing {{ result.items.length }} of {{ result.total }}
+          {{ result.total === 1 ? 'course' : 'courses' }}
+        }
+      </p>
+
+      <h2 class="visually-hidden">Course results</h2>
+
+      @if (result.items.length === 0) {
+        <app-empty-state
+          title="No courses match these filters"
+          message="Try a different search term or remove a filter."
+        >
+          <button mat-stroked-button type="button" (click)="clear()">Clear filters</button>
+        </app-empty-state>
+      } @else {
+        <ul class="grid">
+          @for (rec of result.items; track rec.course.id) {
+            <li>
+              <app-course-card
+                [rec]="rec"
+                [skillNames]="skillNames(rec)"
+                [inPlan]="plan.inPlan(rec.course.id)"
+                [busy]="plan.busy()"
+                (add)="add($event)"
+                (remove)="remove($event)"
+              />
+            </li>
+          }
+        </ul>
+
+        @if (totalPages() > 1) {
+          <nav class="pager" aria-label="Course pages">
+            <button
+              mat-stroked-button
+              type="button"
+              [disabled]="store.page() <= 1"
+              (click)="store.goToPage(store.page() - 1)"
+            >
+              Previous
+            </button>
+            <span>Page {{ store.page() }} of {{ totalPages() }}</span>
+            <button
+              mat-stroked-button
+              type="button"
+              [disabled]="store.page() >= totalPages()"
+              (click)="store.goToPage(store.page() + 1)"
+            >
+              Next
+            </button>
+          </nav>
+        }
+      }
+
+      <p class="muted plan-link">
+        Courses you add appear in <a routerLink="/plan">your learning plan</a>.
+      </p>
+    }
+  }
+}

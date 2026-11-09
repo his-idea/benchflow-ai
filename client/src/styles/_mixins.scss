@@ -1,0 +1,12 @@
+@use 'variables' as v;
+
+@mixin tablet-down {
+  @media (max-width: v.$bp-tablet) {
+    @content;
+  }
+}
+
+@mixin focus-ring {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}

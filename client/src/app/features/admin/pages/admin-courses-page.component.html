@@ -1,0 +1,207 @@
+<header class="page-header">
+  <h1>Course administration</h1>
+  <p>Add or update courses in the catalog. Only active courses appear for employees.</p>
+</header>
+
+<div class="toolbar">
+  <button mat-flat-button type="button" (click)="openNew()">
+    <app-icon name="add" /> New course
+  </button>
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label>Show status</mat-label>
+    <mat-select [value]="statusFilter()" (selectionChange)="setFilter($event.value)">
+      <mat-option value="">All</mat-option>
+      @for (s of statuses; track s) {
+        <mat-option [value]="s">{{ s }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+@if (editing(); as target) {
+  <section class="panel editor" aria-labelledby="editor-heading">
+    <h2 id="editor-heading">{{ target === 'new' ? 'New course' : 'Edit course' }}</h2>
+
+    @if (serverErrors().length > 0) {
+      <div class="errors" role="alert">
+        <ul>
+          @for (m of serverErrors(); track m) {
+            <li>{{ m }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate class="grid">
+      <mat-form-field class="full">
+        <mat-label>Title</mat-label>
+        <input matInput formControlName="title" required maxlength="120" />
+        @if (
+          form.controls.title.hasError('required') || form.controls.title.hasError('minlength')
+        ) {
+          <mat-error>Enter a title of at least 3 characters.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Provider</mat-label>
+        <input matInput formControlName="provider" required maxlength="80" />
+        @if (form.controls.provider.hasError('required')) {
+          <mat-error>Enter the provider.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Duration (hours)</mat-label>
+        <input
+          matInput
+          type="number"
+          formControlName="durationHours"
+          min="0.5"
+          max="200"
+          step="0.5"
+          required
+        />
+        @if (form.controls.durationHours.invalid) {
+          <mat-error>Enter hours between 0.5 and 200.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field class="full">
+        <mat-label>Description</mat-label>
+        <textarea
+          matInput
+          rows="3"
+          formControlName="description"
+          required
+          maxlength="600"
+        ></textarea>
+        @if (form.controls.description.invalid) {
+          <mat-error>Enter 10 to 600 characters.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Skills taught</mat-label>
+        <mat-select formControlName="skillTags" multiple required>
+          @for (skill of catalog.skills(); track skill.id) {
+            <mat-option [value]="skill.id">{{ skill.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.skillTags.hasError('atLeastOne')) {
+          <mat-error>Choose at least one skill.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Prerequisites</mat-label>
+        <mat-select formControlName="prerequisites" multiple>
+          @for (skill of catalog.skills(); track skill.id) {
+            <mat-option [value]="skill.id">{{ skill.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Level</mat-label>
+        <mat-select formControlName="level">
+          @for (l of levels; track l) {
+            <mat-option [value]="l">{{ l }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @for (s of statuses; track s) {
+            <mat-option [value]="s">{{ s }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="full">
+        <mat-label>Course URL (optional)</mat-label>
+        <input matInput type="url" formControlName="url" placeholder="https://" />
+        @if (form.controls.url.invalid) {
+          <mat-error>Enter a web address starting with http:// or https://.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="cluster full">
+        <button mat-flat-button type="submit" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : 'Save course' }}
+        </button>
+        <button mat-button type="button" (click)="close()">Cancel</button>
+      </div>
+    </form>
+  </section>
+}
+
+@switch (status()) {
+  @case ('loading') {
+    <app-loading-state label="Loading courses…" />
+  }
+  @case ('error') {
+    <app-error-state
+      title="We couldn't load courses"
+      [message]="error()?.message ?? 'Please try again.'"
+      (retry)="load()"
+    />
+  }
+  @default {
+    @if (courses().length === 0) {
+      <app-empty-state
+        title="No courses found"
+        message="Create a course or change the status filter."
+      />
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <caption class="visually-hidden">
+            Courses in the catalog
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col">Provider</th>
+              <th scope="col">Level</th>
+              <th scope="col">Hours</th>
+              <th scope="col">Status</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of courses(); track c.id) {
+              <tr>
+                <th scope="row">{{ c.title }}</th>
+                <td>{{ c.provider }}</td>
+                <td>{{ c.level }}</td>
+                <td>{{ c.durationHours }}</td>
+                <td>{{ c.status }}</td>
+                <td class="row-actions">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="openEdit(c)"
+                    [attr.aria-label]="'Edit ' + c.title"
+                  >
+                    <app-icon name="edit" />
+                  </button>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="remove(c)"
+                    [attr.aria-label]="'Delete ' + c.title"
+                  >
+                    <app-icon name="trash" />
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+}

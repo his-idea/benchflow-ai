@@ -1,0 +1,14 @@
+// Semantic colour tokens. Blueprint values, except $color-text-muted which is darkened
+// (#64748b is borderline AA on #f8fafc; #526077 gives roughly 6:1).
+$color-primary: #5b21b6;
+$color-primary-strong: #4c1d95;
+$color-primary-tint: #f1ebfd;
+$color-surface: #ffffff;
+$color-background: #f8fafc;
+$color-text: #0f172a;
+$color-text-muted: #526077;
+$color-border: #dfe4ec;
+$color-track: #e8ebf1;
+$color-success: #047857;
+$color-warning: #b45309;
+$color-error: #b91c1c;

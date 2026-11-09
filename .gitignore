@@ -1,0 +1,24 @@
+# Dependencies and build output
+node_modules/
+dist/
+.angular/
+coverage/
+
+# Secrets: never commit real values. Only the .env.example templates are tracked.
+.env
+.env.*
+!.env.example
+.env.*.local
+
+# Logs and OS files
+*.log
+.DS_Store
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Playwright
+test-results/
+playwright-report/

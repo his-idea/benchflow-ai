@@ -1,0 +1,27 @@
+{
+  "name": "benchflow-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BenchFlow AI: bench assistant, upskilling recommender, and learning-plan portal (Angular + Express + TypeScript)",
+  "engines": { "node": ">=22.22.3", "npm": ">=10" },
+  "scripts": {
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "dev": "concurrently --names api,web --prefix-colors blue,magenta --kill-others-on-fail \"npm --prefix server run dev\" \"npm --prefix client start\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client start",
+    "build": "npm --prefix server run build && npm --prefix client run build",
+    "typecheck": "npm --prefix server run typecheck && npm --prefix client run typecheck",
+    "lint": "npm --prefix server run lint && npm --prefix client run lint",
+    "format": "npm --prefix server run format && npm --prefix client run format",
+    "format:check": "npm --prefix server run format:check && npm --prefix client run format:check",
+    "test": "npm run test:server && npm run test:client",
+    "test:server": "npm --prefix server test",
+    "test:client": "npm --prefix client test",
+    "e2e:install": "npm --prefix client run e2e:install",
+    "e2e": "npm --prefix client run e2e",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "10.0.6"
+  }
+}

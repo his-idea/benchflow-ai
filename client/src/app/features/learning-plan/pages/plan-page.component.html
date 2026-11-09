@@ -1,0 +1,161 @@
+<header class="page-header">
+  <h1>My learning plan</h1>
+  <p>
+    Courses in the order you plan to take them, grouped by the week you expect to finish each one.
+  </p>
+</header>
+
+@switch (store.status()) {
+  @case ('error') {
+    <app-error-state
+      title="We couldn't load your plan"
+      [message]="store.error()?.message ?? 'Please try again.'"
+      (retry)="store.load(true)"
+    />
+  }
+  @case ('success') {
+    @if (drafts.draft()) {
+      <app-plan-draft-editor />
+    }
+
+    @if (store.plan(); as plan) {
+      <section class="summary" aria-labelledby="plan-title">
+        <h2 id="plan-title">{{ plan.title }}</h2>
+        <p>
+          {{ plan.startDate }} to {{ plan.targetDate }} ·
+          <strong>{{ store.progress().completed }} of {{ store.progress().total }}</strong>
+          milestones complete
+        </p>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="store.progress().percent"
+          aria-label="Plan progress"
+        />
+        <p class="disclaimer">
+          Progress shows how far through this plan you are. It is not an assessment of you.
+        </p>
+        <div class="cluster">
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="drafts.generating()"
+            (click)="generate()"
+          >
+            {{ drafts.generating() ? 'Drafting…' : 'Draft a new plan with the assistant' }}
+          </button>
+          <a mat-button routerLink="/learning">Add courses</a>
+        </div>
+      </section>
+
+      @if (plan.items.length === 0) {
+        <app-empty-state
+          title="Your plan has no courses yet"
+          message="Add courses from the Upskilling Store."
+        >
+          <a mat-flat-button routerLink="/learning">Browse courses</a>
+        </app-empty-state>
+      } @else {
+        @for (week of store.weeks(); track week.week) {
+          <section class="week" [attr.aria-labelledby]="'week-' + week.week">
+            <h2 [id]="'week-' + week.week">
+              Week {{ week.week }}
+              <span class="hours">{{ week.hours }} hours planned</span>
+            </h2>
+            @if (week.items.length === 0) {
+              <p class="muted">Nothing planned to finish this week.</p>
+            } @else {
+              <ul class="items">
+                @for (item of week.items; track item.id) {
+                  <li>
+                    <div class="info">
+                      <span class="seq" aria-label="Order in plan">{{ item.sequence }}</span>
+                      <div>
+                        <a [routerLink]="['/learning', item.courseId]">{{ item.courseTitle }}</a>
+                        <div class="muted small">
+                          {{ item.provider }} · {{ item.durationHours }} hours
+                        </div>
+                      </div>
+                    </div>
+                    <mat-form-field class="field">
+                      <mat-label>Status</mat-label>
+                      <mat-select
+                        [value]="item.status"
+                        (selectionChange)="store.setStatus(item.id, $event.value)"
+                      >
+                        @for (s of statuses; track s) {
+                          <mat-option [value]="s">{{ statusLabel[s] }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="field">
+                      <mat-label>Finish in week</mat-label>
+                      <mat-select
+                        [value]="item.targetWeek"
+                        (selectionChange)="store.setWeek(item.id, $event.value)"
+                      >
+                        @for (w of weekChoices; track w) {
+                          <mat-option [value]="w">Week {{ w }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    <div class="controls">
+                      <button
+                        mat-icon-button
+                        type="button"
+                        [disabled]="item.sequence === 1 || store.busy()"
+                        (click)="store.move(item.id, -1)"
+                        [attr.aria-label]="'Move ' + item.courseTitle + ' earlier in the plan'"
+                      >
+                        <app-icon name="up" />
+                      </button>
+                      <button
+                        mat-icon-button
+                        type="button"
+                        [disabled]="item.sequence === plan.items.length || store.busy()"
+                        (click)="store.move(item.id, 1)"
+                        [attr.aria-label]="'Move ' + item.courseTitle + ' later in the plan'"
+                      >
+                        <app-icon name="down" />
+                      </button>
+                      <button
+                        mat-icon-button
+                        type="button"
+                        [disabled]="store.busy()"
+                        (click)="remove(item)"
+                        [attr.aria-label]="'Remove ' + item.courseTitle + ' from plan'"
+                      >
+                        <app-icon name="trash" />
+                      </button>
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+        }
+      }
+    } @else {
+      @if (!drafts.draft()) {
+        <app-empty-state
+          title="You don't have a plan yet"
+          message="Add courses yourself, or let the assistant draft four weeks of learning that fits your hours."
+        >
+          <div class="cluster">
+            <a mat-flat-button routerLink="/learning">Browse courses</a>
+            <button
+              mat-stroked-button
+              type="button"
+              [disabled]="drafts.generating()"
+              (click)="generate()"
+            >
+              {{ drafts.generating() ? 'Drafting…' : 'Draft a plan with the assistant' }}
+            </button>
+          </div>
+        </app-empty-state>
+      }
+    }
+  }
+  @default {
+    <app-loading-state label="Loading your plan…" />
+  }
+}

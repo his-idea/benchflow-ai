@@ -1,0 +1,103 @@
+<section class="draft panel" aria-labelledby="draft-heading">
+  <h2 id="draft-heading">Draft plan (not saved yet)</h2>
+  @if (draft.summary()) {
+    <p class="summary">{{ draft.summary() }}</p>
+  }
+
+  <mat-form-field class="title">
+    <mat-label>Plan title</mat-label>
+    <input matInput [value]="draft.title()" (input)="onTitle($event)" maxlength="80" />
+    @if (draft.title().trim().length < 3) {
+      <mat-error>Enter at least 3 characters.</mat-error>
+    }
+  </mat-form-field>
+
+  @if (draft.items().length > 0) {
+    <ol class="items">
+      @for (
+        item of draft.items();
+        track item.courseId;
+        let i = $index;
+        let first = $first;
+        let last = $last
+      ) {
+        <li>
+          <div class="info">
+            <strong>{{ item.courseTitle }}</strong>
+            <span class="muted">{{ item.durationHours }} hours</span>
+          </div>
+          <mat-form-field class="week">
+            <mat-label>Finish in week</mat-label>
+            <mat-select
+              [value]="item.targetWeek"
+              (selectionChange)="draft.setWeek(item.courseId, $event.value)"
+            >
+              @for (w of weeks; track w) {
+                <mat-option [value]="w">Week {{ w }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <div class="controls">
+            <button
+              mat-icon-button
+              type="button"
+              [disabled]="first"
+              (click)="draft.move(item.courseId, -1)"
+              [attr.aria-label]="'Move ' + item.courseTitle + ' earlier'"
+            >
+              <app-icon name="up" />
+            </button>
+            <button
+              mat-icon-button
+              type="button"
+              [disabled]="last"
+              (click)="draft.move(item.courseId, 1)"
+              [attr.aria-label]="'Move ' + item.courseTitle + ' later'"
+            >
+              <app-icon name="down" />
+            </button>
+            <button
+              mat-icon-button
+              type="button"
+              (click)="draft.remove(item.courseId)"
+              [attr.aria-label]="'Remove ' + item.courseTitle + ' from the draft'"
+            >
+              <app-icon name="trash" />
+            </button>
+          </div>
+        </li>
+      }
+    </ol>
+    <p class="total">
+      Total: {{ draft.totalHours() }} hours across {{ draft.items().length }} courses.
+    </p>
+  } @else {
+    <p class="muted">The draft has no courses. Discard it or ask the assistant for another.</p>
+  }
+
+  @if (draft.draft()?.notes?.length) {
+    <ul class="notes">
+      @for (note of draft.draft()?.notes; track note) {
+        <li>{{ note }}</li>
+      }
+    </ul>
+  }
+
+  @if (plan.plan()) {
+    <p class="muted">
+      Saving replaces your current plan "{{ plan.plan()?.title }}", which is archived.
+    </p>
+  }
+
+  <div class="cluster">
+    <button
+      mat-flat-button
+      type="button"
+      [disabled]="draft.saving() || draft.items().length === 0 || draft.title().trim().length < 3"
+      (click)="save()"
+    >
+      Save as my plan
+    </button>
+    <button mat-button type="button" (click)="draft.discard()">Discard draft</button>
+  </div>
+</section>

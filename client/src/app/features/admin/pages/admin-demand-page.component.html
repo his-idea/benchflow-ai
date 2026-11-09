@@ -1,0 +1,151 @@
+<header class="page-header">
+  <h1>Demand signals</h1>
+  <p>
+    Aggregate, approved inputs that nudge course relevance. Use skill-level demand only. Do not
+    record individuals or named projects.
+  </p>
+</header>
+
+<div class="toolbar">
+  <button mat-flat-button type="button" (click)="openNew()">
+    <app-icon name="add" /> New signal
+  </button>
+</div>
+
+@if (editing(); as target) {
+  <section class="panel editor" aria-labelledby="editor-heading">
+    <h2 id="editor-heading">{{ target === 'new' ? 'New demand signal' : 'Edit demand signal' }}</h2>
+
+    @if (serverErrors().length > 0) {
+      <div class="errors" role="alert">
+        <ul>
+          @for (m of serverErrors(); track m) {
+            <li>{{ m }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate class="grid">
+      <mat-form-field>
+        <mat-label>Skill</mat-label>
+        <mat-select formControlName="skillId" required>
+          @for (skill of catalog.skills(); track skill.id) {
+            <mat-option [value]="skill.id">{{ skill.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.skillId.hasError('required')) {
+          <mat-error>Choose a skill.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Demand level</mat-label>
+        <mat-select formControlName="demandLevel">
+          @for (l of levels; track l) {
+            <mat-option [value]="l">{{ l }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="full">
+        <mat-label>Source</mat-label>
+        <input matInput formControlName="source" maxlength="100" required />
+        @if (form.controls.source.hasError('required')) {
+          <mat-error>Say where this signal comes from.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Effective from</mat-label>
+        <input matInput type="date" formControlName="effectiveFrom" required />
+        @if (form.controls.effectiveFrom.hasError('required')) {
+          <mat-error>Choose a start date.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Effective to (optional)</mat-label>
+        <input matInput type="date" formControlName="effectiveTo" />
+        @if (form.hasError('dateRange')) {
+          <mat-error>The end date must not be before the start date.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="cluster full">
+        <button mat-flat-button type="submit" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : 'Save signal' }}
+        </button>
+        <button mat-button type="button" (click)="close()">Cancel</button>
+      </div>
+    </form>
+  </section>
+}
+
+@switch (status()) {
+  @case ('loading') {
+    <app-loading-state label="Loading demand signals…" />
+  }
+  @case ('error') {
+    <app-error-state
+      title="We couldn't load demand signals"
+      [message]="error()?.message ?? 'Please try again.'"
+      (retry)="load()"
+    />
+  }
+  @default {
+    @if (signals().length === 0) {
+      <app-empty-state
+        title="No demand signals yet"
+        message="Add a signal to influence course relevance."
+      />
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <caption class="visually-hidden">
+            Demand signals
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Skill</th>
+              <th scope="col">Demand</th>
+              <th scope="col">Source</th>
+              <th scope="col">From</th>
+              <th scope="col">To</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of signals(); track s.id) {
+              <tr>
+                <th scope="row">{{ catalog.skillName(s.skillId) }}</th>
+                <td>{{ s.demandLevel }}</td>
+                <td>{{ s.source }}</td>
+                <td>{{ s.effectiveFrom }}</td>
+                <td>{{ s.effectiveTo ?? 'No end date' }}</td>
+                <td class="row-actions">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="openEdit(s)"
+                    [attr.aria-label]="'Edit demand for ' + catalog.skillName(s.skillId)"
+                  >
+                    <app-icon name="edit" />
+                  </button>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="remove(s)"
+                    [attr.aria-label]="'Delete demand for ' + catalog.skillName(s.skillId)"
+                  >
+                    <app-icon name="trash" />
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+}

@@ -1,0 +1,141 @@
+<header class="page-header">
+  <h1>Skill profile</h1>
+  <p>
+    Keep this current so recommendations fit you. Levels are self-assessed and only you and the
+    assistant use them.
+  </p>
+</header>
+
+@if (loading()) {
+  <app-loading-state label="Loading your profile…" />
+} @else if (store.status() === 'error' || catalog.status() === 'error') {
+  <app-error-state
+    title="We couldn't load your profile"
+    [message]="(store.error() ?? catalog.error())?.message ?? 'Please try again.'"
+    (retry)="reload()"
+  />
+} @else {
+  <form [formGroup]="form" (ngSubmit)="save()" class="form" novalidate>
+    @if (serverErrors().length > 0) {
+      <div class="errors" role="alert">
+        <p><strong>Your profile couldn't be saved:</strong></p>
+        <ul>
+          @for (message of serverErrors(); track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <fieldset>
+      <legend>Goals</legend>
+      <mat-form-field>
+        <mat-label>Target role</mat-label>
+        <mat-select formControlName="targetRole" required>
+          @for (role of catalog.roles(); track role.id) {
+            <mat-option [value]="role.id">{{ role.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.targetRole.hasError('required')) {
+          <mat-error>Choose a target role.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Interests</mat-label>
+        <mat-select formControlName="interests" multiple>
+          @for (skill of catalog.skills(); track skill.id) {
+            <mat-option [value]="skill.id">{{ skill.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>Skills you would like to explore</mat-hint>
+      </mat-form-field>
+    </fieldset>
+
+    <fieldset>
+      <legend>Learning preferences</legend>
+      <mat-form-field>
+        <mat-label>Weekly learning hours</mat-label>
+        <input
+          matInput
+          type="number"
+          formControlName="weeklyHours"
+          min="0"
+          max="40"
+          inputmode="numeric"
+          required
+        />
+        <mat-hint>Between 0 and 40</mat-hint>
+        @if (form.controls.weeklyHours.hasError('required')) {
+          <mat-error>Enter your weekly hours.</mat-error>
+        } @else if (
+          form.controls.weeklyHours.hasError('min') || form.controls.weeklyHours.hasError('max')
+        ) {
+          <mat-error>Enter a number from 0 to 40.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Preferred learning style</mat-label>
+        <mat-select formControlName="preferredLearningStyle">
+          @for (style of styles; track style) {
+            <mat-option [value]="style">{{ style }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </fieldset>
+
+    <fieldset>
+      <legend>Current skills</legend>
+      @if (skillRows.length === 0) {
+        <p class="muted">You haven't added any skills yet.</p>
+      }
+      <ul class="skills" formArrayName="skills">
+        @for (row of skillRows; track row.controls.skillId.value; let i = $index) {
+          <li [formGroupName]="i">
+            <span class="skill-name">{{ catalog.skillName(row.controls.skillId.value) }}</span>
+            <mat-form-field class="level">
+              <mat-label>Level</mat-label>
+              <mat-select
+                formControlName="level"
+                [attr.aria-label]="catalog.skillName(row.controls.skillId.value) + ' level'"
+              >
+                @for (c of levelChoices; track c.value) {
+                  <mat-option [value]="c.value">{{ c.value }} · {{ c.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <button
+              mat-icon-button
+              type="button"
+              (click)="removeSkill(i)"
+              [attr.aria-label]="'Remove ' + catalog.skillName(row.controls.skillId.value)"
+            >
+              <app-icon name="trash" />
+            </button>
+          </li>
+        }
+      </ul>
+
+      @if (addableSkills().length > 0) {
+        <mat-form-field class="add">
+          <mat-label>Add a skill</mat-label>
+          <mat-select #adder (selectionChange)="addSkill($event.value); adder.value = null">
+            @for (skill of addableSkills(); track skill.id) {
+              <mat-option [value]="skill.id">{{ skill.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+    </fieldset>
+
+    <div class="cluster">
+      <button mat-flat-button type="submit" [disabled]="saving() || form.pristine">
+        {{ saving() ? 'Saving…' : 'Save profile' }}
+      </button>
+      @if (form.dirty) {
+        <button mat-button type="button" (click)="reload()">Discard changes</button>
+      }
+    </div>
+  </form>
+}

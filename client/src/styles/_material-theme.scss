@@ -1,0 +1,35 @@
+@use '@angular/material' as mat;
+@use 'colors' as c;
+
+// Material 3 theme with the BenchFlow violet as the primary colour.
+html {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$violet-palette,
+        tertiary: mat.$violet-palette,
+      ),
+      typography: (
+        plain-family: 'Public Sans Variable, Segoe UI, system-ui, sans-serif',
+        brand-family: 'Bricolage Grotesque Variable, Segoe UI, system-ui, sans-serif',
+      ),
+      density: 0,
+    )
+  );
+  @include mat.theme-overrides(
+    (
+      primary: c.$color-primary,
+      on-primary: #ffffff,
+      primary-container: c.$color-primary-tint,
+      on-primary-container: c.$color-primary-strong,
+      surface: c.$color-surface,
+      background: c.$color-background,
+      on-surface: c.$color-text,
+      on-surface-variant: c.$color-text-muted,
+      outline: #7a8699,
+      error: c.$color-error,
+    )
+  );
+}

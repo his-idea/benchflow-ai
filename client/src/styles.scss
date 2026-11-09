@@ -1,0 +1,145 @@
+@use 'colors' as c;
+@use 'typography' as t;
+@use 'spacing' as s;
+@use 'mixins' as m;
+@use 'material-theme';
+
+:root {
+  --color-primary: #{c.$color-primary};
+  --color-primary-strong: #{c.$color-primary-strong};
+  --color-primary-tint: #{c.$color-primary-tint};
+  --color-surface: #{c.$color-surface};
+  --color-background: #{c.$color-background};
+  --color-text: #{c.$color-text};
+  --color-text-muted: #{c.$color-text-muted};
+  --color-border: #{c.$color-border};
+  --color-track: #{c.$color-track};
+  --color-success: #{c.$color-success};
+  --color-warning: #{c.$color-warning};
+  --color-error: #{c.$color-error};
+  --color-focus: #1d4ed8;
+  --font-display: #{t.$font-display};
+  --font-body: #{t.$font-body};
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: t.$text-base;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-background);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+h1 {
+  font-size: t.$text-3xl;
+  margin: 0 0 0.5rem;
+}
+h2 {
+  font-size: t.$text-xl;
+  margin: 0 0 0.75rem;
+}
+h3 {
+  font-size: t.$text-lg;
+  margin: 0 0 0.5rem;
+}
+
+p {
+  max-width: 68ch;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+// Visible keyboard focus on everything interactive.
+:focus-visible {
+  @include m.focus-ring;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// Page scaffolding shared by every feature page.
+.page-header {
+  margin-bottom: 1.75rem;
+}
+.page-header p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: s.$radius-control;
+  padding: 1.25rem 1.5rem;
+}
+
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: t.$text-sm;
+  background: var(--color-surface);
+}
+
+.disclaimer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  font-size: t.$text-sm;
+  color: var(--color-text-muted);
+  max-width: 68ch;
+}
+
+// Respect the user's motion preference everywhere.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

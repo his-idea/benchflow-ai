@@ -1,0 +1,9 @@
+{
+  "name": "BenchFlow AI",
+  "short_name": "BenchFlow",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#5b21b6",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

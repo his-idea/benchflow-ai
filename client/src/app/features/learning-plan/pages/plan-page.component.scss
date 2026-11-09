@@ -1,0 +1,75 @@
+.summary {
+  margin-bottom: 2rem;
+}
+.summary h2 {
+  margin-bottom: 0.25rem;
+}
+.week {
+  margin-bottom: 1.75rem;
+}
+.week h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--color-primary);
+}
+.hours {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.items li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 9rem 9rem auto;
+  align-items: center;
+  gap: 0.25rem 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.info {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+.seq {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+.small {
+  font-size: 0.875rem;
+}
+.field {
+  margin-bottom: -1.25rem;
+}
+.controls {
+  display: flex;
+}
+app-plan-draft-editor {
+  display: block;
+  margin-bottom: 2rem;
+}
+@media (max-width: 52rem) {
+  .items li {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .info {
+    grid-column: 1 / -1;
+  }
+  .field {
+    margin-bottom: 0;
+  }
+}

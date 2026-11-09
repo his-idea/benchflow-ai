@@ -1,0 +1,102 @@
+<p class="back"><a routerLink="/learning">Back to Upskilling Store</a></p>
+
+@switch (status()) {
+  @case ('loading') {
+    <app-loading-state label="Loading course…" />
+  }
+  @case ('error') {
+    <app-error-state
+      [title]="error()?.status === 404 ? 'Course not found' : 'We couldn\'t load this course'"
+      [message]="error()?.message ?? 'Please try again.'"
+      [retryable]="error()?.status !== 404"
+      (retry)="load()"
+    />
+  }
+  @default {
+    @if (rec(); as r) {
+      <header class="page-header">
+        <h1>{{ r.course.title }}</h1>
+        <p>{{ r.course.provider }} · {{ r.course.level }} · {{ r.course.durationHours }} hours</p>
+      </header>
+
+      <div class="layout">
+        <section class="main" aria-label="About this course">
+          <p>{{ r.course.description }}</p>
+
+          <h2>What you will practise</h2>
+          <div class="tags">
+            @for (name of names(r.course.skillTags); track name) {
+              <span class="tag">{{ name }}</span>
+            }
+          </div>
+
+          <h2>Before you start</h2>
+          @if (r.course.prerequisites.length > 0) {
+            <p>Helpful background: {{ names(r.course.prerequisites).join(', ') }}.</p>
+          } @else {
+            <p>No prerequisites.</p>
+          }
+
+          <div class="cluster actions">
+            <button mat-flat-button type="button" [disabled]="plan.busy()" (click)="toggle(r)">
+              @if (inPlan()) {
+                <app-icon name="remove" /> Remove from plan
+              } @else {
+                <app-icon name="add" /> Add to plan
+              }
+            </button>
+            @if (r.course.url) {
+              <a mat-stroked-button [href]="r.course.url" target="_blank" rel="noopener noreferrer">
+                Open course page <span class="visually-hidden">(opens in a new tab)</span>
+                <app-icon name="external" />
+              </a>
+            }
+          </div>
+          <p class="muted">
+            Adding a course to your plan does not enrol you. Enrolment happens in the learning
+            system.
+          </p>
+        </section>
+
+        <aside class="why" aria-labelledby="why-heading">
+          <h2 id="why-heading">Why this course</h2>
+          <app-relevance-meter [score]="r.score" [breakdown]="r.breakdown" [showBreakdown]="true" />
+          <ul class="reasons">
+            @for (reason of r.reasons; track reason) {
+              <li>{{ reason }}</li>
+            }
+          </ul>
+          <p class="disclaimer">
+            Course relevance helps you choose learning. It is not a performance rating.
+          </p>
+
+          <div class="feedback" role="group" aria-labelledby="fb-heading">
+            <p id="fb-heading"><strong>Was this recommendation helpful?</strong></p>
+            @if (feedback() === 'sent') {
+              <p role="status">Thanks for the feedback.</p>
+            } @else {
+              <div class="cluster">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  [disabled]="feedback() === 'sending'"
+                  (click)="rate(true)"
+                >
+                  Helpful
+                </button>
+                <button
+                  mat-stroked-button
+                  type="button"
+                  [disabled]="feedback() === 'sending'"
+                  (click)="rate(false)"
+                >
+                  Not helpful
+                </button>
+              </div>
+            }
+          </div>
+        </aside>
+      </div>
+    }
+  }
+}
